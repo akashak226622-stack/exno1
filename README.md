@@ -1,8 +1,6 @@
 # Exno:1
 Data Cleaning Process
 
-
-
 # AIM
 To read the given data and perform data cleaning and save the cleaned data to a file.
 
@@ -25,221 +23,134 @@ STEP 6: Use zscore of to remove outliers
 # Coding and Output
 ```
 import pandas as pd
-import numpy as np
-df=pd.read_csv("/SAMPLEIDS (3).csv")
-df
+
+df = pd.read_csv("Data_set.csv")
+
+print("Missing values before cleaning:")
+print(df.isnull().sum())
+
+categorical_cols = ["show_name", "aired_on", "original_network"]
+
+for col in categorical_cols:
+    df[col] = df[col].fillna("Unknown")
+
+numeric_cols = ["rating", "current_overall_rank", "watchers"]
+
+for col in numeric_cols:
+    df[col] = df[col].fillna(df[col].median())
+
+df["current_overall_rank"] = df["current_overall_rank"].round().astype("Int64")
+
+print("\nMissing values after cleaning:")
+print(df.isnull().sum())
+
+df.to_csv("Data_set_cleaned.csv", index=False)
+
+print("\nCleaned dataset saved successfully!")
 ```
-<img width="1012" height="705" alt="image" src="https://github.com/user-attachments/assets/fa1eea7a-f3f8-4f3b-93c3-0f266d4fd2b5" />
+<img width="927" height="580" alt="image" src="https://github.com/user-attachments/assets/5fc24f83-4aa8-4720-bf1f-186e34552e9b" />
 
 ```
-df.isnull().sum()
+import pandas as pd
+
+df = pd.read_csv("SAMPLEIDS.csv")
+
+df = df.drop_duplicates()
+
+print("Missing values:")
+print(df.isnull().sum())
+
+print("Duplicate registration numbers:")
+print(df[df.duplicated("REGNO", keep=False)])
+
+marks = ["M1", "M2", "M3", "M4"]
+
+print("Inconsistent total marks:")
+print(df[df["TOTAL"] != df[marks].sum(axis=1, min_count=4)])
+
+df.to_csv("SAMPLEIDS_cleaned.csv", index=False)
+
+print("Cleaning completed!")
 ```
-<img width="742" height="632" alt="image" src="https://github.com/user-attachments/assets/9d8d26e7-14aa-4b21-be80-18c94f72c419" />
+<img width="1012" height="645" alt="image" src="https://github.com/user-attachments/assets/702a6301-6f4f-4a43-9320-81270c501127" />
+<img width="632" height="285" alt="image" src="https://github.com/user-attachments/assets/cbc89e03-4401-4f6b-ad55-eb0d005c2d7b" />
 
 ```
-df.info()
+import pandas as pd
+
+df = pd.read_csv("heights.csv")
+
+Q1 = df["height"].quantile(0.25)
+Q3 = df["height"].quantile(0.75)
+
+IQR = Q3 - Q1
+
+lower = Q1 - 1.5 * IQR
+upper = Q3 + 1.5 * IQR
+
+outliers = df[(df["height"] < lower) | (df["height"] > upper)]
+
+print("Unusual height measurements:")
+print(outliers)
 ```
-<img width="701" height="476" alt="image" src="https://github.com/user-attachments/assets/fd1438bf-84de-4551-9e8b-73d7f86cc491" />
+<img width="456" height="142" alt="image" src="https://github.com/user-attachments/assets/d6dfc81d-4142-4915-9e74-5539ff707732" />
 
 ```
-df.describe()
-```
-<img width="1047" height="422" alt="image" src="https://github.com/user-attachments/assets/d6eb808d-8f5b-4548-bda3-ebf2e19e355d" />
+import pandas as pd
 
-```
-df.shape
-```
+df = pd.read_csv("iris.csv")
 
-<img width="597" height="92" alt="image" src="https://github.com/user-attachments/assets/7f7a69e0-b97c-468f-8c34-d77001f7a5a2" />
+cols = df.select_dtypes(include="number").columns
 
-```
-df.head(3)
-```
-<img width="1123" height="230" alt="image" src="https://github.com/user-attachments/assets/969875b6-b4fa-4066-9751-5172f67862f9" />
+for col in cols:
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3 - Q1
 
-```
-df.tail(3)
-```
-<img width="802" height="137" alt="image" src="https://github.com/user-attachments/assets/a9854629-621c-455c-9a59-b039ea9e28e0" />
+    outliers = df[(df[col] < Q1 - 1.5 * IQR) |
+                  (df[col] > Q3 + 1.5 * IQR)]
 
-```
-df.dropna(how='any').shape
-df.shape
-```
-<img width="806" height="195" alt="image" src="https://github.com/user-attachments/assets/692c87d2-4e08-4134-b627-42bf21298190" />
+    print("IQR outliers in", col)
+    print(outliers[col])
 
+for col in cols:
+    z = (df[col] - df[col].mean()) / df[col].std()
+
+    print("Z-score outliers in", col)
+    print(df.loc[z.abs() > 3, col])
 ```
-df.TOTAL.fillna(mn,inplace=True)
-```
-<img width="1727" height="231" alt="image" src="https://github.com/user-attachments/assets/86551ce4-33f6-47de-aae5-1f91f5000e69" />
+<img width="692" height="463" alt="image" src="https://github.com/user-attachments/assets/3af0fdbf-211a-4e40-a1cf-15fb73ab3a1b" />
 
 ```
-df.isna().sum()
+import pandas as pd
+
+df = pd.read_csv("Loan_data.csv")
+
+num_cols = df.select_dtypes(include="number").columns
+
+for col in num_cols:
+    df[col] = df[col].fillna(df[col].median())
+
+cat_cols = df.select_dtypes(include="object").columns
+
+for col in cat_cols:
+    if df[col].isnull().any():
+        df[col] = df[col].fillna(df[col].mode()[0])
+
+df = df.drop_duplicates()
+
+print(df.isnull().sum())
+
+df.to_csv("Loan_data_cleaned.csv", index=False)
+
+print("Data cleaning completed!")
 ```
-<img width="692" height="622" alt="image" src="https://github.com/user-attachments/assets/ddc31fb4-391a-40cb-a5ed-dbb03edbd59f" />
+<img width="492" height="346" alt="image" src="https://github.com/user-attachments/assets/9a2f4c35-1a50-4c82-ad6f-11f847718e3a" />
 
-```
-df['M1'].fillna(method='ffill',inplace=True)
-```
-<img width="1572" height="253" alt="image" src="https://github.com/user-attachments/assets/bc829a40-a5d4-49ce-b095-a1f884185a76" />
 
-```
-df.isna().sum()
-```
-<img width="997" height="625" alt="image" src="https://github.com/user-attachments/assets/0689f41e-62df-43d7-8638-024f8351f248" />
 
-```
-df['M2'].fillna(method='ffill',inplace=True)
-```
-<img width="1660" height="267" alt="image" src="https://github.com/user-attachments/assets/9d8975c3-0d33-4053-b9f6-dfedf3c4318b" />
 
-```
-df.isna().sum()
-```
-<img width="736" height="608" alt="image" src="https://github.com/user-attachments/assets/983a4472-8648-4ab9-b4a8-7e09ee0f9c7b" />
-
-```
-df['M3'].fillna(method='bfill',inplace=True)
-```
-<img width="1672" height="268" alt="image" src="https://github.com/user-attachments/assets/35415455-2440-4492-a116-966a88cd60cd" />
-
-```
-df.isna().sum()
-```
-<img width="620" height="625" alt="image" src="https://github.com/user-attachments/assets/a2f69864-25c8-48bd-8fb8-a65023118561" />
-
-```
-df['M4'].fillna(method='ffill',inplace=True)
-```
-<img width="1712" height="273" alt="image" src="https://github.com/user-attachments/assets/8ff906cb-e015-4a9a-a637-a0676ef4b4e4" />
-
-```
-df.isna().sum()
-
-```
-
-<img width="752" height="607" alt="image" src="https://github.com/user-attachments/assets/d4e4a2d8-31b1-4c7f-b12d-3adec6cc6453" />
-
-```
-df.drop_duplicates(inplace=True)
-df
-
-```
-
-<img width="1016" height="702" alt="image" src="https://github.com/user-attachments/assets/6cbc33d5-be4c-4acb-871d-badf1ba0bab6" />
-
-```
-import seaborn as sns
-sns.heatmap(df.isnull(),yticklabels=False,annot=True)
-
-```
-
-<img width="706" height="612" alt="image" src="https://github.com/user-attachments/assets/a4ef1512-6c9f-4a35-81a2-f9a9bad08e6e" />
-
-```
-df.dropna(inplace=True)
-sns.heatmap(df.isnull(),yticklabels=False,annot=True)
-
-```
-
-<img width="731" height="616" alt="image" src="https://github.com/user-attachments/assets/f56802c0-ac38-48ff-9757-37b8e850e7cf" />
-
-```
-age=[1,3,28,27,25,92,30,39,40,50,26,24,29,94]
-af=pd.DataFrame(age)
-af
-
-```
-
-<img width="432" height="582" alt="image" src="https://github.com/user-attachments/assets/f4687d43-e96f-4035-bcee-54a2b3fe66f9" />
-
-```
-sns.boxplot(data=af)
-
-```
-
-<img width="711" height="537" alt="image" src="https://github.com/user-attachments/assets/3f3cd899-9365-462a-af6e-bcf915c3a7ed" />
-
-```
-sns.scatterplot(data=af)
-
-```
-
-<img width="692" height="527" alt="image" src="https://github.com/user-attachments/assets/1404ed09-684b-4f71-bfd9-c39efb5d2c81" />
-
-```
-Q1=np.percentile(af,25)
-Q3=np.percentile(af,75)
-IQR=Q3-Q1
-IQR
-
-```
-
-<img width="392" height="160" alt="image" src="https://github.com/user-attachments/assets/f6f1581e-f419-451f-b9d6-f2fa28a8c209" />
-
-```
-lower_bound=Q1-1.5*IQR
-upper_bound=Q3+1.5*IQR
-lower_bound
-upper_bound
-
-```
-
-<img width="767" height="290" alt="image" src="https://github.com/user-attachments/assets/0b43db0b-5ba9-4632-b513-cf153978d8fe" />
-
-```
-outliers=[x for x in age if x<lower_bound or x>upper_bound]
-print('Q1:',Q1)
-print('Q3:',Q3)
-print('IQR:',IQR)
-print('lower_bound:',lower_bound)
-print('upper_bound:',upper_bound)
-print('outliers:',outliers)
-
-```
-
-<img width="920" height="323" alt="image" src="https://github.com/user-attachments/assets/9bcbdbfa-0cdd-4eb0-9893-9485b9cd41b7" />
-
-```
-af=af[((af>lower_bound)&(af<upper_bound))]
-af
-
-```
-
-<img width="533" height="597" alt="image" src="https://github.com/user-attachments/assets/e6baf770-9bd8-47c2-8c39-27889e49d892" />
-
-```
-af.dropna(inplace=True)
-af
-
-```
-
-<img width="282" height="443" alt="image" src="https://github.com/user-attachments/assets/1da55fd4-8864-4af0-9832-59d010bae626" />
-
-```
-data=[1,2,2,2,3,1,1,15,2,2,2,3,1,1,2]
-mean=np.mean(data)
-std=np.std(data)
-print("mean of the dataset is",mean)
-print("std. deviation is",std)
-
-```
-
-<img width="832" height="207" alt="image" src="https://github.com/user-attachments/assets/3af11a25-c89e-4549-8481-c45ffed6b9f0" />
-
-```
-threshold=3
-outlier=[]
-for i in data:
-  z=(i-mean)/std
-  if z>threshold:
-    outlier.append(i)
-print("outlier in dataset is",outlier)
-
-```
-
-<img width="858" height="231" alt="image" src="https://github.com/user-attachments/assets/052295e9-354d-4c0d-8eef-c472072e40ad" />
 
 
 # Result
-Thus the python program for reading the given data and perform data cleaning and save the cleaned data to a file is executed.
+Thus the given data successfully performed data cleaning and saved the cleaned data to a file.
